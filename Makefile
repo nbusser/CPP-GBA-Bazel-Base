@@ -1,4 +1,4 @@
-.PHONY: build compile_commands.json build-dev run lint basic-clean clean super-clean
+.PHONY: build compile_commands.json build-dev run build-prod run-prod lint basic-clean clean super-clean
 
 BAZEL?=bazel
 QUERY?=//src:game
@@ -11,6 +11,8 @@ SOURCES:=$(shell find src -name "*.cpp")
 .clang-tidy:
 	tools/clangd/gen_clang_tidy.sh
 
+BAZEL_FLAGS = --config=gba --config=strict
+
 build:
 	$(BAZEL) build --config=gba --config=strict "$(QUERY)"
 
@@ -22,6 +24,12 @@ build-dev: build compile_commands.json
 
 run:
 	$(BAZEL) run --config=gba --config=strict //tools/mgba:run_rom
+
+build-prod:
+	$(BAZEL) build $(BAZEL_FLAGS) --compilation_mode=opt "$(QUERY)"
+
+run-prod:
+	$(BAZEL) run $(BAZEL_FLAGS) --compilation_mode=opt //tools/mgba:run_rom
 
 # Runs clang-tidy with a temporary compile_commands.json,
 # modified to remove all thumb specific flags.
